@@ -26,8 +26,7 @@ class IavAppDataProvider(private val context: Context) {
     ) {
         withTimeout(5_000) {
             val args = Bundle().apply {
-                putInt(ContentResolver.QUERY_ARG_LIMIT, 1)   // only 1 row back
-                putInt("length", maxLength)                  // provider-specific param
+                putInt(ContentResolver.QUERY_ARG_LIMIT, maxLength)
             }
 
             val projection = arrayOf("data")

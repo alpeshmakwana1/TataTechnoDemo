@@ -1,5 +1,6 @@
 package com.pmirkelam.tatatechnodemo.ui.actvity
 
+import RandomTextScreen
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,14 +11,12 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.pmirkelam.tatatechnodemo.data.local.AppDatabaseProvider
 import com.pmirkelam.tatatechnodemo.data.providers.IavAppDataProvider
 import com.pmirkelam.tatatechnodemo.data.repo.RandomTextRepository
-import com.pmirkelam.tatatechnodemo.ui.screens.RandomTextScreen
 import com.pmirkelam.tatatechnodemo.ui.theme.TataTechnoDemoTheme
 import com.pmirkelam.tatatechnodemo.viewmodel.RandomTextViewModel
 import com.pmirkelam.tatatechnodemo.viewmodel.RandomTextViewModelFactory

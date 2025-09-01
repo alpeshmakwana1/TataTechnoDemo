@@ -19,21 +19,23 @@ class RandomTextRepository(
         dao.insert(response.randomText)
     }
 
+    fun getAll(): Flow<List<RandomText>> = dao.getAll()
 
-//    suspend fun fetchAndSaveRandomText(length: Int) {
-//        try {
-//            val value = remote.getRandomText(length) // fetch from provider
-//            val text = RandomText(
-//                value = value,
-//                length = value.length,
-//                created = LocalDateTime.now().toString()
-//            )
-//            dao.insert(text)
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            // fallback or log error
-//        }
-//    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun generateRandom(length: Int): Result<Unit> {
+        return try {
+            val response = provider.fetchRandom(length)
+            val entity = RandomText(
+                value = response.randomText.value,
+                length = response.randomText.length,
+                created = response.randomText.created
+            )
+            dao.insert(entity)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     suspend fun deleteAll() {
         dao.deleteAll()
