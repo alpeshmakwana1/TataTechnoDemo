@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -56,11 +57,16 @@ dependencies {
 
     //Room Library
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.hilt.navigation.compose)
 //    implementation(libs.androidx.material)
     ksp(libs.androidx.room.compiler)
 
     //Gson - For Json Parsing
     implementation(libs.gson)
+
+    //Hilt for DI
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

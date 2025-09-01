@@ -18,27 +18,40 @@ class IavAppDataProvider(private val context: Context) {
 
     private val gson = Gson()
 
-
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun fetchRandom(maxLength: Int): RandomTextResponse = retryWithBackoff(
         attempts = 3,
         baseDelayMs = 400
     ) {
         withTimeout(5_000) {
-            val args = Bundle().apply {
-                putInt(ContentResolver.QUERY_ARG_LIMIT, maxLength)
-            }
-
             val projection = arrayOf("data")
 
-            resolver.query(uri, projection, args, null)?.use { cursor ->
-                if (!cursor.moveToFirst()) error("No rows from provider")
+            val cursor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Use QUERY_ARG_LIMIT for API 26+
+                val args = Bundle().apply { putInt(ContentResolver.QUERY_ARG_LIMIT, maxLength) }
+                resolver.query(uri, projection, args, null)
+            } else {
+                // For older versions, query without args
+                resolver.query(uri, projection, null, null, null)
+            }
 
-                val idx = cursor.getColumnIndex("data")
+            cursor?.use { c ->
+                if (!c.moveToFirst()) error("No rows from provider")
+
+                val idx = c.getColumnIndex("data")
                 if (idx == -1) error("'data' column missing")
 
-                val jsonStr = cursor.getString(idx)
-                return@withTimeout gson.fromJson(jsonStr, RandomTextResponse::class.java)
+                val jsonStr = c.getString(idx)
+
+                // Parse JSON
+                val response = gson.fromJson(jsonStr, RandomTextResponse::class.java)
+
+                // Truncate string manually if needed for older versions
+//                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+//                    val truncatedValue = response.randomText.value.take(maxLength)
+//                    response.randomText = response.randomText.copy(value = truncatedValue)
+//                }
+
+                return@withTimeout response
             }
 
             error("Provider returned null cursor")

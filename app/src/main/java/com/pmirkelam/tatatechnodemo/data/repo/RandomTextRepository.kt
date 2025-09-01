@@ -2,24 +2,20 @@ package com.pmirkelam.tatatechnodemo.data.repo
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.pmirkelam.tatatechnodemo.data.local.RandomTextDao
+import com.pmirkelam.tatatechnodemo.data.local.AppDatabase
 import com.pmirkelam.tatatechnodemo.data.model.RandomText
 import com.pmirkelam.tatatechnodemo.data.providers.IavAppDataProvider
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class RandomTextRepository(
+class RandomTextRepository @Inject constructor(
     private val provider: IavAppDataProvider,
-    private val dao: RandomTextDao
+    private val appDatabase: AppDatabase
 ) {
-    val allTexts: Flow<List<RandomText>> = dao.getAll()
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun fetchAndSave(maxLength: Int) {
-        val response = provider.fetchRandom(maxLength)
-        dao.insert(response.randomText)
-    }
+    val randomTextDao = appDatabase.randomTextDao()
 
-    fun getAll(): Flow<List<RandomText>> = dao.getAll()
+    fun getAll(): Flow<List<RandomText>> = randomTextDao.getAll()
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun generateRandom(length: Int): Result<Unit> {
@@ -30,7 +26,7 @@ class RandomTextRepository(
                 length = response.randomText.length,
                 created = response.randomText.created
             )
-            dao.insert(entity)
+            randomTextDao.insert(entity)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -38,10 +34,10 @@ class RandomTextRepository(
     }
 
     suspend fun deleteAll() {
-        dao.deleteAll()
+        randomTextDao.deleteAll()
     }
 
     suspend fun delete(text: RandomText) {
-        dao.delete(text)
+        randomTextDao.delete(text)
     }
 }

@@ -20,11 +20,11 @@ import com.pmirkelam.tatatechnodemo.viewmodel.RandomTextViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.hilt.navigation.compose.hiltViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RandomTextScreen(viewModel: RandomTextViewModel) {
+fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
     val texts by viewModel.allTexts.collectAsState(initial = emptyList())
     val context = LocalContext.current
 
