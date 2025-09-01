@@ -1,6 +1,4 @@
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +28,7 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
 
     var showDialog by remember { mutableStateOf(false) }
     var inputLength by remember { mutableStateOf("") }
+    val isLoading by viewModel.loading.collectAsState()
 
     // Observe errors
     LaunchedEffect(Unit) {
@@ -38,34 +37,56 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(title = { Text("Random Text Generator") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+    // Close dialog automatically when loading finishes successfully
+    LaunchedEffect(isLoading) {
+        if (!isLoading && showDialog && inputLength.isNotEmpty()) {
+            showDialog = false
+            inputLength = ""
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(title = { Text("Random Text Generator") })
+            },
+            floatingActionButton = {
+                FloatingActionButton(onClick = { showDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
+            },
+            bottomBar = {
+                Button(
+                    onClick = { viewModel.deleteAll() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text("Delete All", color = Color.White)
+                }
             }
-        },
-        bottomBar = {
-            Button(
-                onClick = { viewModel.deleteAll() },
+        ) { padding ->
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
             ) {
-                Text("Delete All", color = Color.White)
+                RandomTextList(texts = texts, viewModel = viewModel)
             }
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-        ) {
-            RandomTextList(texts = texts, viewModel = viewModel)
+
+        // Progress overlay
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 
@@ -73,14 +94,13 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
         showDialog = showDialog,
         inputLength = inputLength,
         onDismiss = { showDialog = false },
-        onValueChange = { inputLength = it },
+        onValueChange = { if (!isLoading) inputLength = it },
         onGenerate = {
             inputLength.toIntOrNull()?.let { len ->
                 viewModel.generateRandom(len)
-                inputLength = ""
-                showDialog = false
             } ?: Toast.makeText(context, "Invalid length", Toast.LENGTH_SHORT).show()
-        }
+        },
+        isLoading = isLoading
     )
 }
 
@@ -146,27 +166,57 @@ private fun RandomTextListItem(item: RandomText) {
         }
     }
 }
-
 @Composable
 private fun InputLengthDialog(
     showDialog: Boolean,
     inputLength: String,
     onDismiss: () -> Unit,
     onValueChange: (String) -> Unit,
-    onGenerate: () -> Unit
+    onGenerate: () -> Unit,
+    isLoading: Boolean
 ) {
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = onDismiss,
-            confirmButton = { TextButton(onClick = onGenerate) { Text("Generate") } },
-            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+            onDismissRequest = { if (!isLoading) onDismiss() },
+            confirmButton = {
+                TextButton(
+                    onClick = { if (!isLoading) onGenerate() },
+                    enabled = !isLoading
+                ) {
+                    Text("Generate")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { if (!isLoading) onDismiss() },
+                    enabled = !isLoading
+                ) { Text("Cancel") }
+            },
             title = { Text("Enter String Length") },
             text = {
-                OutlinedTextField(
-                    value = inputLength,
-                    onValueChange = onValueChange,
-                    label = { Text("Length") }
-                )
+                Column {
+                    OutlinedTextField(
+                        value = inputLength,
+                        onValueChange = onValueChange,
+                        label = { Text("Length") },
+                        enabled = !isLoading
+                    )
+                    if (isLoading) {
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Generating...", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
             }
         )
     }
