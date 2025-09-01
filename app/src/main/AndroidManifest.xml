@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="com.iav.contestdataprovider.READ" />
+    <uses-permission android:name="com.iav.contestdataprovider.WRITE"/>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,7 +16,7 @@
         android:theme="@style/Theme.TataTechnoDemo"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.actvity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.TataTechnoDemo">
