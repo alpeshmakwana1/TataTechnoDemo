@@ -24,12 +24,15 @@ class RandomTextViewModel @Inject constructor(
     private val repo: RandomTextRepository
 ) : ViewModel() {
 
+    //Manage String generation state
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    //Manage Error state ,if occurred from content provider
     private val _error = MutableSharedFlow<String>()
     val error: SharedFlow<String> = _error
 
+    //List of Strings
     val allTexts: StateFlow<List<RandomText>> =
         repo.getAll().stateIn(
             scope = viewModelScope,
@@ -37,6 +40,7 @@ class RandomTextViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    //Generate string using repo class
     fun generateRandom(length: Int) {
         Log.d(TAG, "Request to generate random text of length $length")
         viewModelScope.launch(Dispatchers.IO) {

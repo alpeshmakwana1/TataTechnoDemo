@@ -11,6 +11,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import jakarta.inject.Singleton
 
+/**
+ * Provide Database and ContentProvider object
+ * mark it singleton as both objects having lifecycle same as application
+ * */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {

@@ -11,6 +11,12 @@ import javax.inject.Inject
 
 private const val TAG = "RandomTextRepository"
 
+
+/**
+* Repository for managing RandomText data.
+*
+* Handles data operations between the local database and the IAV content provider.
+*/
 class RandomTextRepository @Inject constructor(
     private val provider: IavAppDataProvider,
     private val appDatabase: AppDatabase
@@ -23,6 +29,12 @@ class RandomTextRepository @Inject constructor(
         return randomTextDao.getAll()
     }
 
+    /**
+     * Fetches a random text from the provider and saves it to the database.
+     *
+     * @param length Maximum length of the random text.
+     * @return Result indicating success or failure.
+     */
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun generateRandom(length: Int): Result<Unit> {
         return try {

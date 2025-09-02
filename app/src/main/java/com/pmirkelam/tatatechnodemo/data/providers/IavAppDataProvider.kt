@@ -11,12 +11,31 @@ import com.pmirkelam.tatatechnodemo.data.model.RandomTextResponse
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 
+
 private const val TAG = "IavAppDataProvider"
 
-class IavAppDataProvider(private val context: Context) {
+/**
+ * Handles fetching random text data from the IAV content provider.
+ *
+ * Uses a content URI to query the provider and parses the result into a RandomTextResponse.
+ * Includes retry logic with exponential backoff for robustness.
+ */
+
+class IavAppDataProvider(context: Context) {
     private val resolver: ContentResolver = context.contentResolver
     private val uri: Uri = Uri.parse("content://com.iav.contestdataprovider/text")
     private val gson = Gson()
+
+    /**
+     * Fetches a random text from the IAV content provider.
+     *
+     * Applies a retry mechanism with exponential backoff and a timeout.
+     * Parses the result into a RandomTextResponse.
+     *
+     * @param maxLength Maximum length of the random text.
+     * @return Parsed response from the provider.
+     * @throws Exception if the query or parsing fails.
+     */
 
     suspend fun fetchRandom(maxLength: Int): RandomTextResponse = retryWithBackoff(
         attempts = 3,
@@ -78,6 +97,16 @@ class IavAppDataProvider(private val context: Context) {
         }
     }
 }
+
+/**
+ * Retries a suspending block with exponential backoff.
+ *
+ * @param attempts Number of retry attempts.
+ * @param baseDelayMs Initial delay in milliseconds.
+ * @param block The suspending function to execute.
+ * @return The result of the block if successful.
+ * @throws Throwable if all attempts fail.
+ */
 
 private suspend fun <T> retryWithBackoff(
     attempts: Int,

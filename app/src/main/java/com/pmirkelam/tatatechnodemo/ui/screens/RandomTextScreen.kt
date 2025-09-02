@@ -55,7 +55,8 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
-                CenterAlignedTopAppBar(title = { Text("Random Text Generator") })
+                TopAppBar(title = {Text("Tata Technologies Demo")}
+                )
             },
             floatingActionButton = {
                 FloatingActionButton(onClick = { showDialog = true }) {
@@ -99,6 +100,12 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
     )
 }
 
+/**
+ * List of Strings generated using content providers
+ * @param texts list of strings fetched from Room Database
+ * @param viewModel viewmodel object to manage the list of strings
+ * @param listState scroll the list to first position on adding new string
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RandomTextList(
@@ -150,6 +157,9 @@ private fun RandomTextList(
     }
 }
 
+/**
+ * List Item ViewHolders
+ * */
 @Composable
 private fun RandomTextListItem(item: RandomText) {
     Card(
@@ -165,6 +175,20 @@ private fun RandomTextListItem(item: RandomText) {
         }
     }
 }
+
+/**
+ * Dialog for entering the desired length of the random string.
+ *
+ * Shows a text input field and buttons to generate or cancel.
+ * Displays a loading indicator while the generation is in progress.
+ *
+ * @param showDialog Whether the dialog should be visible.
+ * @param inputLength Current input value for length.
+ * @param onDismiss Called when the dialog is dismissed.
+ * @param onValueChange Called when the input value changes.
+ * @param onGenerate Called when the generate button is clicked.
+ * @param isLoading Whether a generation operation is in progress.
+ */
 
 @Composable
 private fun InputLengthDialog(
