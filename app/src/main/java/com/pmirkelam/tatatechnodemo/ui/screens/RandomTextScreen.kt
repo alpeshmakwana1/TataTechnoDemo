@@ -2,7 +2,9 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -29,12 +31,17 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
     var showDialog by remember { mutableStateOf(false) }
     var inputLength by remember { mutableStateOf("") }
     val isLoading by viewModel.loading.collectAsState()
+    val listState = rememberLazyListState()
 
     // Observe errors
     LaunchedEffect(Unit) {
         viewModel.error.collect { msg ->
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    LaunchedEffect(texts) {
+        listState.scrollToItem(0)
     }
 
     // Close dialog automatically when loading finishes successfully
@@ -73,19 +80,7 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
                     .padding(padding)
                     .padding(horizontal = 16.dp)
             ) {
-                RandomTextList(texts = texts, viewModel = viewModel)
-            }
-        }
-
-        // Progress overlay
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+                RandomTextList(texts = texts, viewModel = viewModel, listState)
             }
         }
     }
@@ -106,10 +101,14 @@ fun RandomTextScreen(viewModel: RandomTextViewModel = hiltViewModel()) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RandomTextList(texts: List<RandomText>, viewModel: RandomTextViewModel) {
+private fun RandomTextList(
+    texts: List<RandomText>,
+    viewModel: RandomTextViewModel,
+    listState: LazyListState
+) {
     val scope = rememberCoroutineScope()
 
-    LazyColumn(Modifier.fillMaxWidth()) {
+    LazyColumn(Modifier.fillMaxWidth(), state = listState) {
         items(texts, key = { it.created }) { item ->
             val dismissState = rememberSwipeToDismissBoxState(
                 confirmValueChange = {
@@ -166,6 +165,7 @@ private fun RandomTextListItem(item: RandomText) {
         }
     }
 }
+
 @Composable
 private fun InputLengthDialog(
     showDialog: Boolean,

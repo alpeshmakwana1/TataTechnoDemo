@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.pmirkelam.tatatechnodemo.data.model.RandomText
 import com.pmirkelam.tatatechnodemo.data.repo.RandomTextRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,6 +27,9 @@ class RandomTextViewModel @Inject constructor(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _error = MutableSharedFlow<String>()
+    val error: SharedFlow<String> = _error
+
     val allTexts: StateFlow<List<RandomText>> =
         repo.getAll().stateIn(
             scope = viewModelScope,
@@ -33,12 +37,10 @@ class RandomTextViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    private val _error = MutableSharedFlow<String>()
-    val error: SharedFlow<String> = _error
-
     fun generateRandom(length: Int) {
         Log.d(TAG, "Request to generate random text of length $length")
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d(TAG, "Loading True")
             _loading.value = true
             try {
                 val result = repo.generateRandom(length)
@@ -53,6 +55,7 @@ class RandomTextViewModel @Inject constructor(
                 Log.e(TAG, "Exception in generateRandom", e)
                 _error.emit("Failed: ${e.message}")
             }finally {
+                Log.d(TAG, "Loading False")
                 _loading.value = false
             }
         }
@@ -60,7 +63,7 @@ class RandomTextViewModel @Inject constructor(
 
     fun deleteAll() {
         Log.d(TAG, "Request to delete all random texts")
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 repo.deleteAll()
                 Log.d(TAG, "All random texts deleted successfully")
@@ -73,7 +76,7 @@ class RandomTextViewModel @Inject constructor(
 
     fun delete(randomText: RandomText) {
         Log.d(TAG, "Request to delete random text: $randomText")
-        viewModelScope.launch {
+        viewModelScope.launch (Dispatchers.IO){
             try {
                 repo.delete(randomText)
                 Log.d(TAG, "Random text deleted successfully: $randomText")
